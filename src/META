@@ -1,0 +1,5 @@
+version = "current"
+description = "a simple maths library geared for 3D"
+archive(byte) = "gmaths.cma"
+archive(native) = "gmaths.cmxa"
+directory = "+gmaths"

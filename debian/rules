@@ -1,0 +1,106 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# This file is public domain software, originally written by Joey Hess.
+#
+# This version is for a multibinary package. It also allows you to build any
+# of the binary packages independantly, via binary-<package> targets.
+
+# We generate 2 packages from this project : lib<PROJECTNAME>-ocaml and lib<PROJECTNAME>-ocaml-dev
+# Both packages are built using custom build/install rules below
+# If we want to add more generated package, we would have to add more custom rules here
+# Ideally though, it would be nice to have generic rules, and put the specifics in the 
+# dh_* data files
+# the project is using ocamlbuild (ocb)
+# the project offers to build things separately,
+# 
+
+
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+#export DH_OPTIONS
+
+PROJECTNAME      := gmaths
+
+#OCBFLAGS         := -no-hygiene
+OCB              := $(shell which ocamlbuild)
+BUILD            := $(CURDIR)/build.sh
+TARGET           := $(PROJECTNAME).cma $(PROJECTNAME).cmxa 
+
+# do we really need that?
+GREP             := $(shell which grep)
+CUT              := $(shell which cut)
+ECHO             := $(shell which echo)
+version          := $(shell $(GREP) "version" src/META | $(CUT) -f2 -d'=' | $(CUT) -f2 -d'"')
+major            := $(shell $(ECHO) $(VERSION) | $(CUT) -f1 -d'.')
+
+
+
+# configure the debian build system
+configure: debian/configure-stamp
+debian/configure-stamp:
+	$(BUILD) clean
+	dh_testdir
+	dh_prep
+	touch $@
+
+# make upstream build its stuff
+build: configure debian/build-stamp
+debian/build-stamp:
+	dh_testdir
+	$(BUILD) all
+	touch $@
+
+# clean up everything
+clean:
+	dh_testdir
+	dh_testroot
+	$(BUILD) clean
+	rm -f debian/*-stamp
+	dh_clean
+
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+	INSTALL_PREFIX=$(CURDIR)/debian/lib$(PROJECTNAME)-ocaml OCBFLAGS=$(OCBFLAGS) $(BUILD) install-bin
+	INSTALL_PREFIX=$(CURDIR)/debian/lib$(PROJECTNAME)-ocaml-dev OCBFLAGS=$(OCBFLAGS) $(BUILD) install-api
+	dh_install
+
+# build architecture-independent files here (includes, doc)
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_fixperms
+	dh_ocaml
+#	dh_makeshlibs
+	dh_installdeb
+#	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+# build runtime files
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_fixperms
+	dh_ocaml
+#	dh_makeshlibs
+	dh_installdeb
+#	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch binary-indep
+
+.PHONY: build clean binary-indep binary-arch binary install configure

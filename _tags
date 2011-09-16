@@ -1,0 +1,3 @@
+<debian>: -traverse
+<src>: include
+<src/*.cmx>:for-pack(Gmaths)

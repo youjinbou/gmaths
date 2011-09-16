@@ -1,0 +1,16 @@
+This package was debianized by dc <dc@localhost> on
+Tue, 25 Jul 2011 18:20:10 +0100.
+
+Upstream Author(s):
+	didier.cassirame@gmail.com
+
+Copyright:
+
+    <Copyright (C) 2011 Didier Cassirame>
+
+License:
+
+    LGPL v3 (library files), GPL v3 (test files)
+
+The Debian packaging is (C) 2011, dc <dc@localhost> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
