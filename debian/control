@@ -10,7 +10,7 @@ Architecture: any
 Provides: ${ocaml:Provides}
 Depends: ${ocaml:Depends}
 Tag: devel::lang:ocaml, devel::library, implemented-in::ocaml, role::shared-lib
-Description: A basic library for 3D maths operations for OCaml, runtime libraries
+Description: A library for basic 3D maths computation for OCaml, runtime libraries
  This library provides basic vector, matrix and quaternion operations.
  This package contains the runtime libraries.
 
@@ -21,6 +21,6 @@ Provides: ${ocaml:Provides}
 Depends: ${ocaml:Depends}
 #Depends: libgmaths-ocaml
 Tag: devel::lang:ocaml, devel::library, implemented-in::ocaml, role::devel-lib
-Description: A basic library for 3D maths operations for OCaml, development files
+Description: A library for basic 3D maths computation for OCaml, development files
  This library provides basic vector, matrix and quaternion operations.
  This package contains the development files.

@@ -2,7 +2,7 @@
 set -e
 
 #some hooks for downstream packagers
-OCBFLAGS=${OCBFLAGS:="-classic-display"}
+OCBFLAGS=${OCBFLAGS:-"-classic-display"}
 INSTALL_PREFIX=${INSTALL_PREFIX:=""}
 
 PROJECTNAME=${PROJECTNAME:=gmaths}
@@ -11,7 +11,6 @@ OCAMLBUILD=$(which ocamlbuild)
 
 INSTALL=$(which install)
 CP=$(which cp)
-# let's not make backups of the files we install shan't we?
 export VERSION_CONTROL=off
 
 BUILD_PATH=_build
@@ -21,7 +20,7 @@ INSTALL_API_DIR=${INSTALL_API_DIR:=$INSTALL_PREFIX$(ocamlc -where)/$PROJECTNAME}
 INSTALL_DOC_DIR=${INSTALL_DOC_DIR:=$INSTALL_PREFIX/usr/share/doc/$PROJECTNAME}
 
 
-ocb () { $OCAMLBUILD $EXTRAFLAGS $* ; }
+ocb () { $OCAMLBUILD $OCBFLAGS $* ; }
 
 rule () {
     case $1 in

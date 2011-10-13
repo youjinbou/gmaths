@@ -197,6 +197,7 @@ struct
   (* 4D length *)
   let length (v : t) = T.sqrt (dot v v)
 
+  (* 3D length *)
   let length3 (v : t) = T.sqrt (dot3 v v)
 
   let normalize (v : t) =
@@ -232,5 +233,4 @@ module PFloat : Vec.SCALAR with type t = float = Primitives.Float
 module PInt : Vec.SCALAR with type t = int = Primitives.Int
 
 module Float : S with module Scalar = PFloat and type scalar = float = Make(PFloat)
-
 module Int : S with module Scalar = PInt and type scalar = int = Make(PInt)
