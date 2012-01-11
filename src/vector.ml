@@ -5,59 +5,19 @@
 
 include Vec4.Float
 
+module T = Scalar
+
 let vec3 (a,b,c) = of_tuple (a,b,c, 1.0)
 let vec4         = of_tuple 
 
-let alpha v1 v2 = acos ( (dot v1 v2) /. ((length v1) *. (length v2)) )
-
-(*
-(** homogeneous computations *)
-module Homogeneous =
-struct
-
-  let homogeneous f () = 
-    let v = f () in 
-    set v (pred size) 1.; v
-
-  let homogeneous1 f v1 =
-    let v = f v1 in 
-    set v (pred size) 1.; v
-
-  let homogeneous2 f v1 v2 =
-    let v = f v1 v2 in
-    set v (pred size) 1.; v
-
-  let null = homogeneous null
-
-  let unit =  homogeneous1 unit
-
-  let opp = homogeneous1 opp
-
-  let neg = opp
-
-  let add = homogeneous2 add
-
-  let sub = homogeneous2 sub
-
-  let scale = homogeneous2 scale
-
-  let muladd v1 s v2 =
-    let f v1 v2 = muladd v1 s v2 in
-    (homogeneous2 f) v1 v2
-
-  let dot v1 v2 = v1.(0) *. v2.(0) +. v1.(1) *. v2.(1) +. v1.(2) *. v2.(2)
-
-  let cross = cross3d
-
-  let length v = sqrt (dot v v)
-
-  let normalize v = scale v (1. /. (length v))
-
-end
-*)
 
 module HomogeneousF =
 struct
+
+  let h (x,y,z,w) = (x /. w , y /. w, z /. w, 1.0)
+
+  let homogenize v =
+    of_tuple (h (to_tuple v))
 
   let null () : t = [| 0.0 ; 0.0 ; 0.0 ; 1.0 |]
     
@@ -69,40 +29,73 @@ struct
 
   let neg = opp
 
-  let add (v1 : t) (v2 : t) : t = 
-    [| v1.(0) +. v2.(0) ; v1.(1) +. v2.(1) ; v1.(2) +. v2.(2) ; v1.(3) |]
+  let apply2 op (v1 : t) (v2 : t) : t = 
+    let ( +. ) = op in
+    let (x1,y1,z1,_), (x2,y2,z2,_) = h (to_tuple v1), h (to_tuple v2) in
+    [| x1 +. x2 ; y1 +. y2 ; z1 +. z2 ; 1.0 |]
 
-  let add3 (v1 : t) (v2 : t) (v3 : t) : t =
-    [| v1.(0) +. v2.(0) +. v3.(0) ; v1.(1) +. v2.(1) +. v3.(1) ; v1.(2) +. v2.(2) +. v3.(2) ; v1.(3) |]
+  let apply3 op (v1 : t) (v2 : t) (v3 : t) : t =
+    let ( +. ) = op in
+    let (x1,y1,z1,_), (x2,y2,z2,_), (x3,y3,z3,_) = h (to_tuple v1), h (to_tuple v2), h (to_tuple v3) in
+    [| x1 +. x2 +. x3  ; y1 +. y2 +. y3 ; z1 +. z2 +. z3 ; 1.0 |]
 
-  let add4 (v1 : t) (v2 : t) (v3 : t) (v4 : t) : t =
-    [| v1.(0) +. v2.(0) +. v3.(0) +. v4.(0) ; v1.(1) +. v2.(1) +. v3.(1) +. v4.(1) ; v1.(2) +. v2.(2) +. v3.(2) +. v4.(2) ; v1.(3) |]
+  let apply4 op (v1 : t) (v2 : t) (v3 : t) (v4 : t) : t =
+    let ( +. ) = op in
+    let (x1,y1,z1,_), (x2,y2,z2,_), (x3,y3,z3,_), (x4,y4,z4,_) = 
+      h (to_tuple v1), h (to_tuple v2), h (to_tuple v3), h (to_tuple v4) in
+    [| x1 +. x2 +. x3  +. x4 ; y1 +. y2 +. y3 +. y4 ; z1 +. z2 +. z3 +. z4 ; 1.0 |]
 
-  let sub (v1 : t) (v2 : t) : t = 
-    [| v1.(0) -. v2.(0) ; v1.(1) -. v2.(1) ; v1.(2) -. v2.(2) ; v1.(3) |]
+  let add = apply2 ( +. )
+  let add3 = apply3 ( +. )
+  let add4 = apply4 ( +. )
 
-  let sub3 (v1 : t) (v2 : t) (v3 : t) : t = 
-    [| v1.(0) -. v2.(0) -. v3.(0) ; v1.(1) -. v2.(1) -. v3.(1) ; v1.(2) -. v2.(2) -. v3.(2) ; v1.(3) |]
-
-  let sub4 (v1 : t) (v2 : t) (v3 : t) (v4 : t) : t = 
-    [| v1.(0) -. v2.(0) -. v3.(0) -. v4.(0) ; v1.(1) -. v2.(1) -. v3.(1) -. v4.(1) ; v1.(2) -. v2.(2) -. v3.(2)  -. v4.(2) ; v1.(3) |]
-
+  let sub = apply2 ( -. )
+  let sub3 = apply3 ( -. )
+  let sub4 = apply4 ( -. )
 
   let scale (v : t) (s : scalar) : t =
-    [| v.(0) *. s ; v.(1) *. s ; v.(2) *. s ; v.(3) |]    
+    [| v.(0) ; v.(1) ; v.(2) ; v.(3) /. s |]
 
   let muladd (v1 : t) (s : scalar) (v2 : t) : t = 
-    [| v1.(0) *. s +. v2.(0) ; v1.(1) *. s +. v2.(1) ; v1.(2) *. s +. v2.(2) ; v1.(3) |]
+    let op x y = x *. s +. y in
+    apply2 op v1 v2
 
-  let dot (v1 : t) (v2 : t) = v1.(0) *. v2.(0) +. v1.(1) *. v2.(1) +. v1.(2) *. v2.(2)
+  let dot (v1 : t) (v2 : t) = 
+    let (x1,y1,z1,_), (x2,y2,z2,_) = h (to_tuple v1), h (to_tuple v2) in
+    x1 *. x2 +. y1 *. y2 +. z1 *. z2
 
-  let cross = cross3d
+  let cross (av : t array) : t = 
+    let (x1,y1,z1,_), (x2,y2,z2,_) = h (to_tuple av.(0)), h (to_tuple av.(1)) in [|
+      (y1 *. z2) -. (z1 *. y2) ;
+      (z1 *. x2) -. (x1 *. z2) ;
+      (x1 *. y2) -. (y1 *. x2) ;
+      1.0
+  |]
 
   let length (v : t) = sqrt (dot v v)
 
   let normalize (v : t) = scale v (1. /. (length v))
 
+  let make_system (v : t) : t * t * t =
+    let zero = T.zero
+    and one = T.one in
+    let v' =
+      let x,y,z,_ = to_tuple v in
+      if T.abs x > zero || T.abs y > zero
+      then of_tuple (T.opp y, x, zero, one)
+      else
+	if T.abs z > zero
+	then of_tuple (zero, z, T.opp y, one)
+	else
+	  invalid_arg "make_system : null vector"
+    in
+    let v'' = cross [| v' ; v |] in
+    let v'  = cross [| v''; v |] in
+    v', v, v''
+
 end
+
+let alpha v1 v2 = acos ( (dot v1 v2) /. ((length v1) *. (length v2)) )
 
 (* override defaults with homogeneous operators *)
 include HomogeneousF
@@ -113,5 +106,3 @@ let distance v1 v2 =
 (** compute the unit vector on the line from p1 to p2 *)
 let unit_vector p1 p2 = 
   normalize (sub p2 p1)
-
-

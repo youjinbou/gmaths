@@ -10,14 +10,18 @@ sig
   type tuple_t = scalar * scalar
 
   (** vector dimensions *)
+
   val size : int
 
   (** vector creation *)
+
   val init : (int -> scalar) -> t
+  val make : scalar -> t
 
   (** fold operators *)
+
   val fold_left : ('a -> scalar -> 'a) -> 'a -> t -> 'a
-  val fold_right : ('a -> scalar -> 'a) -> t -> 'a -> 'a
+  val fold_right : (scalar -> 'a -> 'a) -> t -> 'a -> 'a
 
   (** accessors *)
 
@@ -38,8 +42,6 @@ sig
   val map3set : (scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> unit
   val map4set : (scalar -> scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t -> unit
 
-  (** vector creation *)
-  val make : scalar -> t
 
   (** null vector *)
   val null : unit -> t
@@ -52,9 +54,6 @@ sig
 
   (** opposit vector operator *)
   val opp : t -> t
-
-  (** alias of opp *)
-  val neg : t -> t
 
   (** additions *)
 
@@ -77,14 +76,14 @@ sig
   (** dot product *)
   val dot : t -> t -> scalar
 
+  (** cross product *)
+  val cross : t array -> t
+
   (** equivalent of map id *)
   val clone : t -> t
 
   (** copy the first operand in the second *)
   val copy : t -> t -> unit
-
-  (** alias of copy *)
-  val blit : t -> t -> unit
 
   (** tuple conversion *)
 

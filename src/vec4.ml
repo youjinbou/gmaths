@@ -1,67 +1,116 @@
 (** a very simple 4D vector module *)
 
-(** module signature *)
 module type S =
 sig
   module Scalar : Vec.SCALAR
-
   type scalar = Scalar.t
   type t = scalar array
   type tuple_t = scalar * scalar * scalar * scalar
 
+  (** vector dimensions *)
   val size : int
+
+  (** null vector *)
+  val null : unit -> t
+
+  (** < 1 ; 1 ; 1 ; 1 > *)
+  val one : unit -> t
+
+  (** unit vector generator *)
+  val unit : int -> t
+
+  (** tuple conversion *)
+
+  val to_tuple : t -> scalar * scalar * scalar * scalar
+  val of_tuple : scalar * scalar * scalar * scalar -> t
+
+  (** vector creation *)
+
   val init : (int -> scalar) -> t
-  val init3 : (int -> scalar) -> t
-  val fold_left : ('a -> scalar -> 'a) -> 'a -> t -> 'a
-  val fold_right : ('a -> scalar -> 'a) -> t -> 'a -> 'a
+  val make : scalar -> t
+
+  (** accessors *)
+
   val get : t -> int -> scalar
   val set : t -> int -> scalar -> unit
-  val map : (scalar -> 'a) -> t -> 'a array
+
+  (** map operators *)
+
+  val map  : (scalar -> 'a) -> t -> 'a array
   val map2 : (scalar -> scalar -> 'a) -> t -> t -> 'a array
-  val map3 :
-    (scalar -> scalar -> scalar -> 'a) -> t -> t -> t -> 'a array
+  val map3 : (scalar -> scalar -> scalar -> 'a) -> t -> t -> t -> 'a array
   val map4 :
     (scalar -> scalar -> scalar -> scalar -> 'a) ->
     t -> t -> t -> t -> 'a array
+
   val mapset  : (scalar -> scalar) -> t -> unit
   val map2set : (scalar -> scalar -> scalar) -> t -> t -> unit
   val map3set : (scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> unit
   val map4set : (scalar -> scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t -> unit
-  val make : scalar -> t
-  val null : unit -> t
-  val one : unit -> t
-  val unit : int -> t
+
+
+  (** opposit vector operator *)
   val opp : t -> t
-  val neg : t -> t
-  val add : t -> t -> t
+
+  (** additions *)
+
+  val add  : t -> t -> t
   val add3 : t -> t -> t -> t
   val add4 : t -> t -> t -> t -> t
-  val sub : t -> t -> t
+  val sub  : t -> t -> t
   val sub3 : t -> t -> t -> t
   val sub4 : t -> t -> t -> t -> t
+
+  (** vector scaling *)
   val scale : t -> scalar -> t
+
+  (** equivalent of map (Scalar.mul) *)
   val mul : t -> t -> t
+
+  (** this is actually scale and add *)
   val muladd : t -> scalar -> t -> t
-  val dot3 : t -> t -> scalar
+
+  (** 4D dot product *)
   val dot : t -> t -> scalar
-  val cross3d : t -> t -> t
-  val cross : t -> t -> t
+
+  (** cross product *)
+  val cross : t array -> t
+
+  (** equivalent of map id *)
   val clone : t -> t
+
+  (** copy the first operand in the second *)
   val copy : t -> t -> unit
-  val blit : t -> t -> unit
-  val to_tuple : t -> scalar * scalar * scalar * scalar
-  val of_tuple : scalar * scalar * scalar * scalar -> t
+
+
+  (** random vector generator *)
   val random : t -> t
+
+  (** equivalent of map Scalar.mod *)
   val modulo : t -> scalar -> t
+
+  (** check that the operand components are all below Scalar.epsilon in absolute value *)
   val below_epsilon : t -> bool
+
+  (** fold operators *)
+
+  val fold_left  : ('a -> scalar -> 'a) -> 'a -> t -> 'a
+  val fold_right : (scalar -> 'a -> 'a) -> t -> 'a -> 'a
+
+  (** misc operators *)
+
   val for_all : (scalar -> bool) -> t -> bool
-  val min : t -> t -> t
-  val max : t -> t -> t
-  val length : t -> scalar
-  val length3 : t -> scalar
-  val normalize : t -> t
+  val min     : t -> t -> t
+  val max     : t -> t -> t
+
+  (** string 'serialization' *)
   val to_string : t -> string
-  val make_system : t -> t * t * t
+    
+  (** vector lengths/norm, normalization *)
+
+  val length : t -> scalar
+
+  val normalize : t -> t
 
 end
 
@@ -76,10 +125,10 @@ struct
 
   type tuple_t = scalar * scalar * scalar * scalar
 
-  let ( + ) = T.add
-  let ( - ) = T.sub
-  let ( * ) = T.mul
-  let ( / ) = T.div
+  let ( +. ) = T.add
+  let ( -. ) = T.sub
+  let ( *. ) = T.mul
+  let ( /. ) = T.div
   let abs   = T.abs
 
   let size = 4
@@ -94,7 +143,7 @@ struct
     f (f (f (f acc v.(0)) v.(1)) v.(2)) v.(3)
 
   let fold_right f (v : t) (acc : 'a) =
-    f (f (f (f acc v.(3)) v.(2)) v.(1)) v.(0)
+    f v.(0) (f v.(1) (f v.(2) (f v.(3) acc)))
 
   let get (v : t) i = v.(i)
 
@@ -151,43 +200,44 @@ struct
   let neg = opp
 
   let add (v1 : t) (v2 : t) : t = 
-    init (fun i -> v1.(i) + v2.(i))
+    init (fun i -> v1.(i) +. v2.(i))
 
   let add3 v1 v2 v3 : t = 
-    map3 (fun x y z -> x + y + z) v1 v2 v3
+    map3 (fun x y z -> x +. y +. z) v1 v2 v3
 
   let add4 v1 v2 v3 v4 : t = 
-    map4 (fun x y z w -> x + y + z + w) v1 v2 v3 v4
+    map4 (fun x y z w -> x +. y +. z +. w) v1 v2 v3 v4
 
   let sub (v1 : t) (v2 : t) : t = 
-    init (fun i -> v1.(i) - v2.(i))
+    init (fun i -> v1.(i) -. v2.(i))
 
   let sub3 v1 v2 v3 : t = 
-    map3 (fun x y z -> x - y - z) v1 v2 v3
+    map3 (fun x y z -> x -. y -. z) v1 v2 v3
 
   let sub4 v1 v2 v3 v4 : t = 
-    map4 (fun x y z w -> x - y - z - w) v1 v2 v3 v4
+    map4 (fun x y z w -> x -. y -. z -. w) v1 v2 v3 v4
 
   let scale (v1 : t) s : t = 
-    init (fun i -> v1.(i) * s)
+    init (fun i -> v1.(i) *. s)
 
   let mul v1 v2 : t =
-    map2 (fun x y -> x * y) v1 v2
+    map2 (fun x y -> x *. y) v1 v2
 
   let muladd v1 s v2 : t =
-    map2 (fun x y -> x * s + y) v1 v2
+    map2 (fun x y -> x *. s +. y) v1 v2
 
   (* 4D dot product ! *)
-  let dot3 (v1 : t) (v2 : t) : scalar = v1.(0) * v2.(0) + v1.(1) * v2.(1) + v1.(2) * v2.(2)
+  let dot3 (v1 : t) (v2 : t) : scalar = v1.(0) *. v2.(0) +. v1.(1) *. v2.(1) +. v1.(2) *. v2.(2)
 
   (* 4D dot product ! *)
-  let dot (v1 : t) (v2 : t) : scalar = v1.(0) * v2.(0) + v1.(1) * v2.(1) + v1.(2) * v2.(2) + v1.(3) * v2.(3)
+  let dot (v1 : t) (v2 : t) : scalar = v1.(0) *. v2.(0) +. v1.(1) *. v2.(1) +. v1.(2) *. v2.(2) +. v1.(3) *. v2.(3)
 
   (* 3D cross product *)
-  let cross3d (v1 : t) (v2 : t) : t = [|
-      (v1.(1) * v2.(2)) - (v1.(2) * v2.(1)) ;
-      (v1.(2) * v2.(0)) - (v1.(0) * v2.(2)) ;
-      (v1.(0) * v2.(1)) - (v1.(1) * v2.(0)) ;
+  let cross3d (av : t array) : t = 
+    let v1, v2 = av.(0), av.(1) in [|
+      (v1.(1) *. v2.(2)) -. (v1.(2) *. v2.(1)) ;
+      (v1.(2) *. v2.(0)) -. (v1.(0) *. v2.(2)) ;
+      (v1.(0) *. v2.(1)) -. (v1.(1) *. v2.(0)) ;
       T.one
   |]
 
@@ -229,7 +279,7 @@ struct
   let length3 (v : t) = T.sqrt (dot3 v v)
 
   let normalize (v : t) =
-    let n = T.div T.one (length v)
+    let n = T.one /. (length v)
     in 
       scale v n
 
@@ -237,23 +287,6 @@ struct
     let to_string = T.to_string in
     "< "^(to_string v.(0))^" ; "^(to_string v.(1))^" ; "^(to_string v.(2))^" ; "^(to_string v.(3))^" >"
 
-
-  let make_system (v : t) : t * t * t =
-    let zero = T.zero
-    and one = T.one in
-    let v' =
-      let x,y,z,_ = to_tuple v in
-      if T.abs x > zero || T.abs y > zero
-      then of_tuple (T.opp y, x, zero, one)
-      else
-	if T.abs z > zero
-	then of_tuple (zero, z, T.opp y, one)
-	else
-	  invalid_arg "make_system : null vector"
-    in
-    let v'' = cross3d v' v in
-    let v'  = cross3d v'' v in
-    v', v, v''
       
 end
 
