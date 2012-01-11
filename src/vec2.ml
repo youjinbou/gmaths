@@ -23,6 +23,10 @@ sig
   val map4 :
     (scalar -> scalar -> scalar -> scalar -> 'a) ->
     t -> t -> t -> t -> 'a array
+  val mapset : (scalar -> scalar) -> t -> unit
+  val map2set : (scalar -> scalar -> scalar) -> t -> t -> unit
+  val map3set : (scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> unit
+  val map4set : (scalar -> scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t -> unit
   val make : scalar -> t
   val null : unit -> t
   val one : unit -> t
@@ -99,6 +103,22 @@ struct
 
   let map4 f (v1 : t) (v2 : t) (v3 : t) (v4 : t) : 'a array = 
     [| f v1.(0) v2.(0) v3.(0) v4.(0) ; f v1.(1) v2.(1) v3.(1) v4.(1) |]
+
+  let mapset f (v : t) =
+    v.(0) <- f v.(0);
+    v.(1) <- f v.(1)
+
+  let map2set f (v1 : t) (v2 : t) =
+    v1.(0) <- f v1.(0) v2.(0);
+    v1.(1) <- f v1.(1) v2.(1)
+
+  let map3set f (v1 : t) (v2 : t) (v3 : t) =
+    v1.(0) <- f v1.(0) v2.(0) v3.(0);
+    v1.(1) <- f v1.(1) v2.(1) v3.(1)
+
+  let map4set f (v1 : t) (v2 : t) (v3 : t) (v4 : t) =
+    v1.(0) <- f v1.(0) v2.(0) v3.(0) v4.(0);
+    v1.(1) <- f v1.(1) v2.(1) v3.(1) v4.(1)
 
   let make v : t = 
     [| v ; v |]

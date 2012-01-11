@@ -1,6 +1,6 @@
 Source: gmaths
 Priority: extra
-Maintainer: dc <dc@localhost>
+Maintainer: Didier Cassirame <dc@localhost>
 Build-Depends: debhelper (>= 7)
 Standards-Version: 3.7.3
 

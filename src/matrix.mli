@@ -1,13 +1,13 @@
 
 type vector = float array
-type t = vector array
+type t
 
 val width : t -> int
 val height : t -> int
 val column_get : t -> int -> int -> float
-val line_get : t -> int -> int -> float
+val row_get : t -> int -> int -> float
 val column_set : t -> int -> int -> float -> unit
-val line_set : t -> int -> int -> float -> unit
+val row_set : t -> int -> int -> float -> unit
 val get : t -> int -> int -> float
 val set : t -> int -> int -> float -> unit
 val row : t -> int -> vector
@@ -32,6 +32,7 @@ type mat4x4 = t
 module Mat2 :
 sig
   type t = mat2x2
+  type vector = Vec2.Float.t
   val size : int
   val identity : unit -> t
   val null : unit -> t
@@ -45,6 +46,7 @@ end
 module Mat3 :
 sig
   type t = mat3x3
+  type vector = Vec3.Float.t
   val size : int
   val identity : unit -> t
   val null : unit -> t
@@ -66,6 +68,7 @@ end
 module Mat4 :
 sig
   type t = mat4x4
+  type vector = Vector.t
   val size : int
   val row : t -> int -> vector
   val col : t -> int -> vector

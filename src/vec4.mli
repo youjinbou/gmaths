@@ -34,6 +34,11 @@ sig
     (scalar -> scalar -> scalar -> scalar -> 'a) ->
     t -> t -> t -> t -> 'a array
 
+  val mapset : (scalar -> scalar) -> t -> unit
+  val map2set : (scalar -> scalar -> scalar) -> t -> t -> unit
+  val map3set : (scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> unit
+  val map4set : (scalar -> scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t -> unit
+
   (** vector creation *)
   val make : scalar -> t
 

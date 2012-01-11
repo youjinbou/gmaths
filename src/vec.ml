@@ -42,6 +42,10 @@ sig
   val map2    : (scalar -> scalar -> scalar) -> t -> t -> t
   val map3    : (scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t
   val map4    : (scalar -> scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t -> t
+  val mapset  : (scalar -> scalar) -> t -> unit
+  val map2set : (scalar -> scalar -> scalar) -> t -> t -> unit
+  val map3set : (scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> unit
+  val map4set : (scalar -> scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t -> unit
   val opp     : t -> t
   val add     : t -> t -> t
   val add3    : t -> t -> t -> t

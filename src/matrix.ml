@@ -7,44 +7,49 @@ type t = vector array (* n x m matrix *)
 let width (m : t) = Array.length m.(0)
 
 let height (m : t) = Array.length m
-  
+
+(** get a matrix entry column first *)
 let column_get (m : t) i j = m.(i).(j)
-let line_get (m : t) i j = m.(j).(i)
-
+(** set a matrix entry column first *)
 let column_set (m : t) i j v = m.(i).(j) <- v
-let line_set (m : t) i j v = m.(j).(i) <- v
 
-(* column matrix access *)
+(** get a matrix entry row first *)
+let row_get (m : t) i j = m.(j).(i)
+(** set a matrix entry row first *)
+let row_set (m : t) i j v = m.(j).(i) <- v
+
+(** aliases for column_get/set *)
 let get (m : t) x y = column_get m x y
-  
 let set (m : t) x y v = column_set m x y v
   
-(* returns a copy of the nth row of m *)
+(** returns a copy of the nth row of m *)
 let row (m : t) n =
   let w = width m in
-  Array.init w (fun i -> line_get m n i)
+  Array.init w (fun i -> row_get m n i)
     
-(* returns a copy of the nth column of m *)
+(** returns a copy of the nth column of m *)
 let col (m : t) n =
   let h = height m in
   Array.init h (fun i -> column_get m n i)
 
 (* generic functions --------------- *)
   
-(* column matrix creation *)
+(** create & initialize with function f a column matrix of size w * h *)
 let init w h f : t = 
   Array.init h (fun y -> Array.init w (fun x -> (f y x)))
 
+(** produce the transpose matrix of m *)
 let transpose w h (m : t) =
   init h w (fun x y -> get m y x)
 
-(* identity matrix *)
+(** the identity matrix *)
 let id w : t =
   init w w (fun x y -> if x = y then 1.0 else 0.0)
 
+(** compute the minor value of the entry (x,y) of a given square matrix of size w *)
 let minor w x y = fun m a b -> m ((a + x + 1) mod w) ((b + y + 1) mod w)
 
-let dotf s v1 v2 = 
+let dotf (s : int) (v1 : int -> float) (v2 : int -> float) : float = 
   let rec dotf i f1 f2 r = 
     if i < 0 then r else dotf (pred i) v1 v2 (r +. (f1 i) *. (f2 i))
   in
@@ -57,7 +62,7 @@ let mult (m1 : t) (m2 : t) =
   and s' = height m2
   in
   if s = s' then
-    init w h (fun a b -> dotf s (line_get m1 a) (column_get m2 b))
+    init w h (fun a b -> dotf s (row_get m1 a) (column_get m2 b))
   else raise (Invalid_argument "Matrix.mult : sizes of matrices don't match")
 
 let make w h v =
@@ -95,6 +100,8 @@ struct
 
   type t = mat2x2
 
+  type vector = Vec2.Float.t
+
   let size = 2
 
   let identity () : t = id 2
@@ -106,11 +113,18 @@ struct
   let detf m = 
     (m 0 0) *. (m 1 1) -. (m 1 0) *. (m 0 1)
 
+  let dotf v1 v2 = (v1 0) *. (v2 0) +. (v1 1) *. (v2 1)
+
+  let apply m (v : vector) : vector = 
+    Vec2.Float.init (fun i -> dotf (get m i) (Vec2.Float.get v))
+
+  let mult (m1 : t) (m2 : t) =
+    init size size (fun a b -> dotf (row_get m1 a) (column_get m2 b))
+
   let transposef m = [| 
     [| get m 0 0 ; get m 1 0 |] ; 
     [| get m 0 1 ; get m 1 1 |] 
 		     |]
-
 
   let rotation_z angle : t = 
     let c = cos angle
@@ -142,6 +156,8 @@ struct
 
   type t = mat3x3
 
+  type vector = Vec3.Float.t
+
   let size = 3
 
   let identity () : t = id size
@@ -161,16 +177,15 @@ struct
     [| get m 0 0 ; get m 1 0 ; get m 2 0 |] ; 
     [| get m 0 1 ; get m 1 1 ; get m 2 1 |] ;
     [| get m 0 2 ; get m 1 2 ; get m 2 2 |] 
-		    |]
+			  |]
 
   let dotf v1 v2 = (v1 0) *. (v2 0) +. (v1 1) *. (v2 1) +. (v1 2) *. (v2 2)
 
-  let apply (m : t) v = 
-    Array.init 3 (fun i -> dotf (get m i) (fun i -> v.(i)))
+  let apply (m : t) (v : vector) : vector = 
+    Vec3.Float.init (fun i -> dotf (get m i) (Vec3.Float.get v))
 
   let mult (m1 : t) (m2 : t) =
-    init 3 3 (fun a b -> dotf (line_get m1 a) (column_get m2 b))
-
+    init size size (fun a b -> dotf (row_get m1 a) (column_get m2 b))
 
   let rotation_z angle : t = 
     let c = cos angle
@@ -261,6 +276,8 @@ module Mat4 =
 struct
 
   type t = mat4x4
+
+  type vector = Vec4.Float.t
 
   let size = 4
 
@@ -359,14 +376,14 @@ struct
   let dotf v1 v2 = (v1 0) *. (v2 0) +. (v1 1) *. (v2 1) +. (v1 2) *. (v2 2) +. (v1 3) *. (v2 3)
 
 (*
-  let apply m v = 
+  let apply (m : t) (v : vector) : vector = 
     Array.init 4 (fun i -> dotf (get m i) (fun i -> v.(i)))
 *)
 
   let mult (m1 : t) (m2 : t) =
-    init 4 4 (fun a b -> dotf (line_get m1 b) (column_get m2 a)) 
+    init 4 4 (fun a b -> dotf (row_get m1 b) (column_get m2 a)) 
       
-  let apply (m : t) v = 
+  let apply (m : t) (v : vector) : vector = 
     let (x,y,z,w) = V4.to_tuple v 
     in 
     if (let d = w -. 1.0 in (abs_float d) > epsilon_float) then (
@@ -463,7 +480,7 @@ struct
 
   (* scaling on 3 axes *)
   let scalev v : t =
-    let x,y,z = V4.get v 0,V4.get v 1,V4.get v 2
+    let x,y,z,_ = V4.to_tuple v
     in
     scale x y z
 
