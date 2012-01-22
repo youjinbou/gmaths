@@ -11,7 +11,7 @@ struct
   let  div  = ( /. )
   let  rand = Random.float
   let  opp x = -.x
-  let  modulo x m = if x <= (-. m) then x +. m else if x > m then x -. m else x
+  let  modulo x m = mod_float x m
   let  pi = acos(0.0) *. 2.0
   let  epsilon = epsilon_float
   let  acos    = acos

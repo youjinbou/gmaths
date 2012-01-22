@@ -1,3 +1,5 @@
+(** homogeneous 3D vectors *)
+
 module Scalar :
 sig
   type t = float

@@ -193,11 +193,15 @@ struct
 
   let one  () = make T.one
 
-  let unit i  = let u = null () in u.(i) <- T.one ; u
+  let unit : int -> t = 
+    let one = T.one and zero = T.zero in function
+      | 0 -> [| one ; zero ; zero ; zero |]
+      | 1 -> [| zero ; one ; zero ; zero |]
+      | 2 -> [| zero ; zero ; one ; zero |]
+      | 3 -> [| zero ; zero ; zero ; one |]
+      | _ -> invalid_arg "Vector.unit"
 
   let opp v   = map (fun x -> T.opp x) v
-
-  let neg = opp
 
   let add (v1 : t) (v2 : t) : t = 
     init (fun i -> v1.(i) +. v2.(i))
@@ -227,9 +231,6 @@ struct
     map2 (fun x y -> x *. s +. y) v1 v2
 
   (* 4D dot product ! *)
-  let dot3 (v1 : t) (v2 : t) : scalar = v1.(0) *. v2.(0) +. v1.(1) *. v2.(1) +. v1.(2) *. v2.(2)
-
-  (* 4D dot product ! *)
   let dot (v1 : t) (v2 : t) : scalar = v1.(0) *. v2.(0) +. v1.(1) *. v2.(1) +. v1.(2) *. v2.(2) +. v1.(3) *. v2.(3)
 
   (* 3D cross product *)
@@ -242,13 +243,12 @@ struct
   |]
 
   (* fix-me: implement 4D cross product *)
-  let cross = cross3d
+  let cross (av : t array) : t = 
+    invalid_arg "4D cross product not implemented"
 
   let clone (v : t) = init (fun i -> v.(i))
 
   let copy (v1 : t) (v2 : t) = Array.blit v1 0 v2 0 size
-
-  let blit = copy
 
   let to_tuple (v : t)  = (v.(0),v.(1),v.(2),v.(3))
 
@@ -260,12 +260,6 @@ struct
 
   let below_epsilon (v : t) = Array.fold_left (fun acc x -> acc && (abs x < T.epsilon)) true v
 
-(*
-  let fold_left  : ('a -> scalar -> 'a) -> 'a -> t -> 'a = Array.fold_left
-
-  let fold_right : (scalar -> 'a -> 'a) -> t -> 'a -> 'a = Array.fold_right
-*)
-
   let for_all f (v : t) = Array.fold_left (fun acc x -> acc && (f x)) true v
 
   let min (v1 : t) (v2 : t) = map2 min v1 v2 
@@ -275,17 +269,15 @@ struct
   (* 4D length *)
   let length (v : t) = T.sqrt (dot v v)
 
-  (* 3D length *)
-  let length3 (v : t) = T.sqrt (dot3 v v)
-
   let normalize (v : t) =
     let n = T.one /. (length v)
     in 
       scale v n
 
   let to_string (v : t) =
-    let to_string = T.to_string in
-    "< "^(to_string v.(0))^" ; "^(to_string v.(1))^" ; "^(to_string v.(2))^" ; "^(to_string v.(3))^" >"
+    let to_s = T.to_string 
+    and x,y,z,w = to_tuple v in
+    "< "^to_s x^" ; "^to_s y^" ; "^to_s z^" ; "^to_s w^" >"
 
       
 end

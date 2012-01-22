@@ -1,3 +1,4 @@
 <debian>: -traverse
 <src>: include
 <src/*.cmx>:for-pack(Gmaths)
+<tests/*.{ml,native,byte}>: use_unix, use_oUnit

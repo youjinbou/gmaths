@@ -196,7 +196,12 @@ struct
 
   let one  () = make T.one
 
-  let unit i  = let u = null () in u.(i) <- T.one ; u
+  let unit : int -> t = 
+    let one = T.one and zero = T.zero in function
+      | 0 -> [| one ; zero ; zero |]
+      | 1 -> [| zero ; one ; zero |]
+      | 2 -> [| zero ; zero ; one |]
+      | _ -> invalid_arg "Vector.unit"
 
   let opp v   = map (fun x -> T.opp x) v
 

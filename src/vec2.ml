@@ -189,11 +189,13 @@ struct
 
   let one  () : t = make T.one
 
-  let unit i : t = let u = null () in u.(i) <- T.one ; u
+  let unit : int -> t = 
+    let one = T.one and zero = T.zero in function
+      | 0 -> [| one ; zero |]
+      | 1 -> [| zero ; one |]
+      | _ -> invalid_arg "Vector.unit"
 
   let opp v : t  = map (fun x -> T.opp x) v
-
-  let neg = opp
 
   let add (v1 : t) (v2 : t) = 
     init (fun i -> v1.(i) +. v2.(i))
@@ -204,10 +206,8 @@ struct
   let add4 (v1 : t) (v2 : t) (v3 : t) (v4 : t) = 
     map4 (fun x y z w -> x +. y +. z +. w) v1 v2 v3 v4
 
-
   let sub (v1 : t) (v2 : t) = 
     init (fun i -> v1.(i) -. v2.(i))
-
 
   let sub3 (v1 : t) (v2 : t) (v3 : t) = 
     map3 (fun x y z -> x -. y -. z) v1 v2 v3
@@ -215,14 +215,11 @@ struct
   let sub4 (v1 : t) (v2 : t) (v3 : t) (v4 : t) = 
     map4 (fun x y z w -> x -. y -. z -. w) v1 v2 v3 v4
 
-
   let scale (v1 : t) s  : t = 
     init (fun i -> v1.(i) *. s)
 
-
   let mul v1 v2 : t =
     map2 (fun x y -> x *. y) v1 v2
-
 
   let muladd v1 s v2 : t =
     map2 (fun x y -> x *. s +. y) v1 v2
