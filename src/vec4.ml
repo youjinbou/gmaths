@@ -24,6 +24,11 @@ sig
   val to_tuple : t -> scalar * scalar * scalar * scalar
   val of_tuple : scalar * scalar * scalar * scalar -> t
 
+  (** array conversion *)
+
+  val of_array : scalar array -> t
+  val to_array : t -> scalar array
+
   (** vector creation *)
 
   val init : (int -> scalar) -> t
@@ -251,14 +256,20 @@ struct
   let copy (v1 : t) (v2 : t) = Array.blit v1 0 v2 0 size
 
   let to_tuple (v : t)  = (v.(0),v.(1),v.(2),v.(3))
-
   let of_tuple (x,y,z,w) : t = [| x; y; z; w |]
+
+  let to_array v = Array.copy v
+  let of_array v = Array.sub v 0 size
 
   let random (v : t) : t = map (fun x -> if x = T.zero then T.zero else T.rand x) v 
 
   let modulo (v : t) m : t = map (fun x -> T.modulo x m) v
 
-  let below_epsilon (v : t) = Array.fold_left (fun acc x -> acc && (abs x < T.epsilon)) true v
+  let below_epsilon (v : t) = 
+    let check i =
+      abs v.(i) < T.epsilon 
+    in
+    check 0 && check 1 && check 2 && check 3
 
   let for_all f (v : t) = Array.fold_left (fun acc x -> acc && (f x)) true v
 

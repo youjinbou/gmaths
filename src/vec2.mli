@@ -90,6 +90,11 @@ sig
   val to_tuple : t -> scalar * scalar
   val of_tuple : scalar * scalar -> t
 
+  (** array conversion *)
+
+  val of_array : scalar array -> t
+  val to_array : t -> scalar array
+
   (** random vector generator *)
   val random : t -> t
 

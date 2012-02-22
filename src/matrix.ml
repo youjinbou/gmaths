@@ -386,10 +386,12 @@ struct
   let apply (m : t) (v : vector) : vector = 
     let (x,y,z,w) = V4.to_tuple v 
     in 
+(*
     if (let d = w -. 1.0 in (abs_float d) > epsilon_float) then (
 (*      Debug.fvec "Matrix.apply : homogeneous vector error = " v; *)
       assert (let d = w -. 1.0 in (abs_float d) < epsilon_float);
     );
+*)
     let x = m.(0).(0) *. x +. m.(1).(0) *. y +. m.(2).(0) *. z +. m.(3).(0) *. w 
     and y = m.(0).(1) *. x +. m.(1).(1) *. y +. m.(2).(1) *. z +. m.(3).(1) *. w 
     and z = m.(0).(2) *. x +. m.(1).(2) *. y +. m.(2).(2) *. z +. m.(3).(2) *. w 

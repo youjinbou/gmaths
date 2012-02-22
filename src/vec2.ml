@@ -91,6 +91,11 @@ sig
   val to_tuple : t -> scalar * scalar
   val of_tuple : scalar * scalar -> t
 
+  (** array conversion *)
+
+  val of_array : scalar array -> t
+  val to_array : t -> scalar array
+
   (** random vector generator *)
   val random : t -> t
 
@@ -236,8 +241,10 @@ struct
   let copy (v1 : t) (v2 : t) = Array.blit v1 0 v2 0 size
 
   let to_tuple (v : t) = v.(0),v.(1)
-
   let of_tuple (x,y) : t = [| x; y |]
+
+  let to_array v = Array.copy v
+  let of_array v = Array.sub v 0 size
 
   let random (v : t) : t = map (fun x -> if x = T.zero then T.zero else T.rand x) v 
 

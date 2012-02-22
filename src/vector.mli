@@ -40,6 +40,11 @@ val unit : int -> t
 val to_tuple : t -> scalar * scalar * scalar * scalar
 val of_tuple : scalar * scalar * scalar * scalar -> t
 
+(** array conversion *)
+
+val of_array : scalar array -> t
+val to_array : t -> scalar array
+
 (** vector creation *)
 
 val init : (int -> scalar) -> t

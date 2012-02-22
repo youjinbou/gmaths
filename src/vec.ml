@@ -1,18 +1,18 @@
 module type SCALAR =
 sig
   type t
-  val  zero   : t
-  val  one    : t
-  val  add    : t -> t -> t
-  val  sub    : t -> t -> t
-  val  mul    : t -> t -> t
-  val  div    : t -> t -> t
-  val  opp    : t -> t
-  val  rand   : t -> t
-  val  modulo : t -> t -> t
-  val  epsilon: t
-  val  abs    : t -> t
-  val  sqrt   : t -> t
+  val  zero      : t
+  val  one       : t
+  val  add       : t -> t -> t
+  val  sub       : t -> t -> t
+  val  mul       : t -> t -> t
+  val  div       : t -> t -> t
+  val  opp       : t -> t
+  val  rand      : t -> t
+  val  modulo    : t -> t -> t
+  val  epsilon   : t
+  val  abs       : t -> t
+  val  sqrt      : t -> t
   val  to_string : t -> string
 end
 
@@ -42,6 +42,11 @@ sig
 
   val of_tuple : tuple_t -> t
   val to_tuple : t -> tuple_t
+
+  (** array conversion *)
+
+  val of_array : scalar array -> t
+  val to_array : t -> scalar array
 
   (** vector creation *)
 
@@ -94,16 +99,17 @@ sig
   (** copy the first operand in the second *)
   val copy    : t -> t -> unit
 
-(** random vector generator *)
+  (** random vector generator *)
   val random : t -> t
 
-(** equivalent of map Scalar.mod *)
+  (** equivalent of map Scalar.mod *)
   val modulo : t -> scalar -> t
 
   (** check that the operand components are all below Scalar.epsilon in absolute value *)
   val below_epsilon : t -> bool
 
   (** fold operators *)
+
   val fold_left : ('a -> scalar -> 'a) -> 'a -> t -> 'a
   val fold_right : (scalar -> 'a -> 'a) -> t -> 'a -> 'a
 

@@ -8,13 +8,12 @@ include Vec4.Float
 module T = Scalar
 
 let vec3 (a,b,c) = of_tuple (a,b,c, 1.0)
-let vec4         = of_tuple 
-
+let vec4 x       = of_tuple x
 
 module HomogeneousF =
 struct
 
-  let h (x,y,z,w) = (x /. w , y /. w, z /. w, 1.0)
+  let h (x,y,z,w) = x /. w , y /. w, z /. w, 1.0
 
   let homogenize v =
     let w = v.(3) in
@@ -51,7 +50,7 @@ struct
     [|  v.(0) ; v.(1) ; v.(2) ; -. v.(3) |]
 
   let apply1 op v =
-    let (x,y,z,_) = to_tuple v in
+    let x,y,z,_ = to_tuple v in
     [| op x ; op y ; op z ; 1.0 |]
 
   let apply2 op (v1 : t) (v2 : t) : t = 
@@ -114,11 +113,15 @@ struct
 
   let normalize (v : t) = invscale v (length v)
 
+  let below_epsilon (v : t) = 
+    let x,y,z,_ = to_tuple v in
+    T.abs x < T.epsilon && T.abs y < T.epsilon && T.abs z < T.epsilon
+
+
   let to_string (v : t) =
     let to_s = T.to_string
     and x,y,z,w = to_tuple v in
     "< "^to_s x^" ; "^to_s y^" ; "^to_s z^" ; "^to_s w^" >"
-
 
   let make_system (v : t) : t * t * t =
     let zero = T.zero

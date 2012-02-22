@@ -1,4 +1,5 @@
 <debian>: -traverse
 <src>: include
-<src/*.cmx>:for-pack(Gmaths)
-<tests/*.{ml,native,byte}>: use_unix, use_oUnit
+<src/*.cmx>: inline, for-pack(Gmaths)
+<src/*.ml>: inline
+<tests/*.{ml,native,byte}>: inline, use_unix, use_oUnit, use_gmaths
