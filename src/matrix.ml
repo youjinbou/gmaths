@@ -5,7 +5,6 @@ type vector = float array
 type t = vector array (* n x m matrix *)
 
 let width (m : t) = Array.length m.(0)
-
 let height (m : t) = Array.length m
 
 (** get a matrix entry column first *)
@@ -21,21 +20,21 @@ let row_set (m : t) i j v = m.(j).(i) <- v
 (** aliases for column_get/set *)
 let get (m : t) x y = column_get m x y
 let set (m : t) x y v = column_set m x y v
-  
+
 (** returns a copy of the nth row of m *)
 let row (m : t) n =
   let w = width m in
   Array.init w (fun i -> row_get m n i)
-    
+
 (** returns a copy of the nth column of m *)
 let col (m : t) n =
   let h = height m in
   Array.init h (fun i -> column_get m n i)
 
 (* generic functions --------------- *)
-  
+
 (** create & initialize with function f a column matrix of size w * h *)
-let init w h f : t = 
+let init w h f : t =
   Array.init h (fun y -> Array.init w (fun x -> (f y x)))
 
 (** produce the transpose matrix of m *)
@@ -49,16 +48,16 @@ let id w : t =
 (** compute the minor value of the entry (x,y) of a given square matrix of size w *)
 let minor w x y = fun m a b -> m ((a + x + 1) mod w) ((b + y + 1) mod w)
 
-let dotf (s : int) (v1 : int -> float) (v2 : int -> float) : float = 
-  let rec dotf i f1 f2 r = 
+let dotf (s : int) (v1 : int -> float) (v2 : int -> float) : float =
+  let rec dotf i f1 f2 r =
     if i < 0 then r else dotf (pred i) v1 v2 (r +. (f1 i) *. (f2 i))
   in
   dotf (pred s) v1 v2 0.0
 
 let mult (m1 : t) (m2 : t) =
-  let h = height m1 
-  and w = width m2 
-  and s = width m1 
+  let h = height m1
+  and w = width m2
+  and s = width m1
   and s' = height m2
   in
   if s = s' then
@@ -76,26 +75,33 @@ let mapi f (m : t) =
   let w, h = width m, height m in
   init w h (fun i j -> f i j (get m i j))
 
-let copy (m : t)  = 
+let copy (m : t)  =
   let w, h = width m, height m in
   init w h (fun i j -> get m i j)
   (* init (fun i j -> get m i j) *)
-    
-let null w h = 
+
+let null w h =
   make w h 0.
 
 let fscale (m : t) (k : float) : t =
   let w, h = width m, height m in
   init w h (fun i j -> k *. (get m i j))
 
-
 type mat2x2 = t
 type mat3x3 = t
 type mat4x4 = t
 
+let to_array m =
+  let lm = width m
+  and lv = height m in
+  Array.init (lm * lv) @@
+  fun i -> m.(i / lm).(i mod lv)
+
+let of_array a lm lv =
+  Array.init lm @@ fun i -> Array.init lv @@ fun j -> a.(i * lv + j)
 
 (* size 2 matrices --------------- *)
-module Mat2 = 
+module Mat2 =
 struct
 
   type t = mat2x2
@@ -110,40 +116,40 @@ struct
     null size size
 
   (* determinant of - functionally accessed - square matrix of size 2 *)
-  let detf m = 
+  let detf m =
     (m 0 0) *. (m 1 1) -. (m 1 0) *. (m 0 1)
 
   let dotf v1 v2 = (v1 0) *. (v2 0) +. (v1 1) *. (v2 1)
 
-  let apply m (v : vector) : vector = 
+  let apply m (v : vector) : vector =
     Vec2.Float.init (fun i -> dotf (get m i) (Vec2.Float.get v))
 
   let mult (m1 : t) (m2 : t) =
     init size size (fun a b -> dotf (row_get m1 a) (column_get m2 b))
 
-  let transposef m = [| 
-    [| get m 0 0 ; get m 1 0 |] ; 
-    [| get m 0 1 ; get m 1 1 |] 
+  let transposef m = [|
+    [| get m 0 0 ; get m 1 0 |] ;
+    [| get m 0 1 ; get m 1 1 |]
 		     |]
 
-  let rotation_z angle : t = 
+  let rotation_z angle : t =
     let c = cos angle
-    and s = sin angle 
-    in [| 
+    and s = sin angle
+    in [|
       [|   c ; -.s |];
       [|   s ;   c |];
        |]
-    
-  let rotation_y angle : t = 
+
+  let rotation_y angle : t =
     let c = cos angle
-    in [| 
+    in [|
       [|   c ; 0.0 |];
       [| 0.0 ; 1.0 |];
        |]
 
-  let rotation_x angle : t = 
+  let rotation_x angle : t =
     let c = cos angle
-    in [| 
+    in [|
       [| 1.0 ; 0.0 |];
       [| 0.0 ;   c |];
        |]
@@ -151,7 +157,7 @@ struct
 end
 
 (* size 3 matrices --------------- *)
-module Mat3 = 
+module Mat3 =
 struct
 
   type t = mat3x3
@@ -166,54 +172,54 @@ struct
     null size size
 
   (* determinant of - functionally accessed - square matrix of size 3 *)
-  let detf m = 
+  let detf m =
     let det2f = Mat2.detf in
     let f k = fun a b -> m (a+1) ((b+k) mod 3) in
     (m 0 0) *. (det2f (f 1)) +.
       (m 0 1) *. (det2f (f 2)) +.
       (m 0 2) *. (det2f (f 3))
 
-  let transpose (m : t) = [| 
-    [| get m 0 0 ; get m 1 0 ; get m 2 0 |] ; 
+  let transpose (m : t) = [|
+    [| get m 0 0 ; get m 1 0 ; get m 2 0 |] ;
     [| get m 0 1 ; get m 1 1 ; get m 2 1 |] ;
-    [| get m 0 2 ; get m 1 2 ; get m 2 2 |] 
+    [| get m 0 2 ; get m 1 2 ; get m 2 2 |]
 			  |]
 
   let dotf v1 v2 = (v1 0) *. (v2 0) +. (v1 1) *. (v2 1) +. (v1 2) *. (v2 2)
 
-  let apply (m : t) (v : vector) : vector = 
+  let apply (m : t) (v : vector) : vector =
     Vec3.Float.init (fun i -> dotf (get m i) (Vec3.Float.get v))
 
   let mult (m1 : t) (m2 : t) =
     init size size (fun a b -> dotf (row_get m1 a) (column_get m2 b))
 
-  let rotation_z angle : t = 
+  let rotation_z angle : t =
     let c = cos angle
-    and s = sin angle 
-    in [| 
+    and s = sin angle
+    in [|
       [|   c ; -.s ; 0.0 |];
       [|   s ;   c ; 0.0 |];
       [| 0.0 ; 0.0 ; 1.0 |];
        |]
 
-  let rotation_y angle : t = 
+  let rotation_y angle : t =
     let c = cos angle
-    and s = sin angle 
-    in [| 
+    and s = sin angle
+    in [|
       [|   c ; 0.0 ;   s |];
       [| 0.0 ; 1.0 ; 0.0 |];
       [| -.s ; 0.0 ;   c |];
        |]
 
-  let rotation_x angle : t = 
+  let rotation_x angle : t =
     let c = cos angle
-    and s = sin angle 
-    in [| 
+    and s = sin angle
+    in [|
       [| 1.0 ; 0.0 ; 0.0 |];
       [| 0.0 ;   c ; -.s |];
       [| 0.0 ;   s ;   c |];
        |]
-    
+
   let rotation n theta : t =
     match n with
       | 0 -> rotation_x theta
@@ -223,9 +229,9 @@ struct
 
   (* rotation on 1 axis *)
   let rotation2 n theta : t =
-    let n = n mod 3 
+    let n = n mod 3
     and m = null ()
-    and c = cos theta 
+    and c = cos theta
     and s = sin theta in
     let ms = -.s in
     set m n n 1.;
@@ -251,20 +257,20 @@ struct
       ));
     m
 
-  let minor = minor 3 
+  let minor = minor 3
 
   let inversef m =
-    let dim = 3 
+    let dim = 3
     and det2f = Mat2.detf in
-    let d = detf m 
-    and f x y = (minor x y) m 
+    let d = detf m
+    and f x y = (minor x y) m
     in
     if d != 0.0 then
       let cof = init dim dim (fun a b -> (det2f (f a b)) /. d)
       in
       cof
     else raise (Invalid_argument "Matrix.inverse : null determinant")
-      
+
   let inverse (m : t) : t =
     inversef (get m)
 
@@ -289,7 +295,7 @@ struct
   let col (m : t) n =
     V4.of_tuple (m.(n).(0), m.(n).(1), m.(n).(2), m.(n).(3))
 
-  let setrow (m : t) n v = 
+  let setrow (m : t) n v =
     let x,y,z,w = V4.to_tuple v in
     m.(0).(n) <- x;
     m.(1).(n) <- y;
@@ -305,14 +311,14 @@ struct
 
 
   (* determinant of - functionally accessed - square matrix of size 4 *)
-  let detf m = 
+  let detf m =
     let det3f = Mat3.detf in
     let f k = fun a b -> m (a+1) ((b+k) mod 4) in
     (m 0 0) *. (det3f (f 1)) -.
       (m 0 1) *. (det3f (f 2)) +.
       (m 0 2) *. (det3f (f 3)) -.
       (m 0 3) *. (det3f (f 4))
-      
+
   let det (m : t) =
     detf (get m)
 
@@ -320,33 +326,33 @@ struct
     null size size
 
   (* identity matrix of size 4 *)
-  let identity () : t = 
+  let identity () : t =
     id size
 
   let rotation_z angle : t =
     let c = cos angle
-    and s = sin angle 
-    in [| 
+    and s = sin angle
+    in [|
       [|   c ; -.s ; 0.0 ; 0.0 |];
       [|   s ;   c ; 0.0 ; 0.0 |];
       [| 0.0 ; 0.0 ; 1.0 ; 0.0 |];
       [| 0.0 ; 0.0 ; 0.0 ; 1.0 |];
        |]
 
-  let rotation_y angle : t = 
+  let rotation_y angle : t =
     let c = cos angle
-    and s = sin angle 
-    in [| 
+    and s = sin angle
+    in [|
       [|   c ; 0.0 ;   s ; 0.0 |];
       [| 0.0 ; 1.0 ; 0.0 ; 0.0 |];
       [| -.s ; 0.0 ;   c ; 0.0 |];
       [| 0.0 ; 0.0 ; 0.0 ; 1.0 |];
        |]
 
-  let rotation_x angle : t = 
+  let rotation_x angle : t =
     let c = cos angle
-    and s = sin angle 
-    in [| 
+    and s = sin angle
+    in [|
       [| 1.0 ; 0.0 ; 0.0 ; 0.0 |];
       [| 0.0 ;   c ; -.s ; 0.0 |];
       [| 0.0 ;   s ;   c ; 0.0 |];
@@ -361,7 +367,7 @@ struct
   let inversef m =
     let dim = size in
     let det3f = Mat3.detf in
-    let d = detf m 
+    let d = detf m
     and f x y = (minor x y) m
     in
     if d != 0.0 then
@@ -376,27 +382,27 @@ struct
   let dotf v1 v2 = (v1 0) *. (v2 0) +. (v1 1) *. (v2 1) +. (v1 2) *. (v2 2) +. (v1 3) *. (v2 3)
 
 (*
-  let apply (m : t) (v : vector) : vector = 
+  let apply (m : t) (v : vector) : vector =
     Array.init 4 (fun i -> dotf (get m i) (fun i -> v.(i)))
 *)
 
   let mult (m1 : t) (m2 : t) =
-    init 4 4 (fun a b -> dotf (row_get m1 b) (column_get m2 a)) 
-      
-  let apply (m : t) (v : vector) : vector = 
-    let (x,y,z,w) = V4.to_tuple v 
-    in 
+    init 4 4 (fun a b -> dotf (row_get m1 b) (column_get m2 a))
+
+  let apply (m : t) (v : vector) : vector =
+    let (x,y,z,w) = V4.to_tuple v
+    in
 (*
     if (let d = w -. 1.0 in (abs_float d) > epsilon_float) then (
 (*      Debug.fvec "Matrix.apply : homogeneous vector error = " v; *)
       assert (let d = w -. 1.0 in (abs_float d) < epsilon_float);
     );
 *)
-    let x = m.(0).(0) *. x +. m.(1).(0) *. y +. m.(2).(0) *. z +. m.(3).(0) *. w 
-    and y = m.(0).(1) *. x +. m.(1).(1) *. y +. m.(2).(1) *. z +. m.(3).(1) *. w 
-    and z = m.(0).(2) *. x +. m.(1).(2) *. y +. m.(2).(2) *. z +. m.(3).(2) *. w 
-    and w = m.(0).(3) *. x +. m.(1).(3) *. y +. m.(2).(3) *. z +. m.(3).(3) *. w 
-    in 
+    let x = m.(0).(0) *. x +. m.(1).(0) *. y +. m.(2).(0) *. z +. m.(3).(0) *. w
+    and y = m.(0).(1) *. x +. m.(1).(1) *. y +. m.(2).(1) *. z +. m.(3).(1) *. w
+    and z = m.(0).(2) *. x +. m.(1).(2) *. y +. m.(2).(2) *. z +. m.(3).(2) *. w
+    and w = m.(0).(3) *. x +. m.(1).(3) *. y +. m.(2).(3) *. z +. m.(3).(3) *. w
+    in
     V4.of_tuple (x,y,z,w)
 
   let translation x y z : t =
@@ -408,10 +414,10 @@ struct
     m
 
   (* vector translation *)
-  let translationv vt : t = 
+  let translationv vt : t =
     let x = V4.get vt 0
     and y = V4.get vt 1
-    and z = V4.get vt 2 
+    and z = V4.get vt 2
     in
     translation x y z
 
@@ -421,9 +427,9 @@ struct
 
   (* rotation on 1 axis *)
   let rotation2 n theta : t =
-    let n = n mod 3 
+    let n = n mod 3
     and m = null ()
-    and c = cos theta 
+    and c = cos theta
     and s = sin theta in
     let ms = -.s in
     set m n n 1.;
@@ -457,18 +463,18 @@ struct
       | _ -> assert false
 
   (* rotation on 3 axes *)
-  let invrotationv vr : t = 
+  let invrotationv vr : t =
     let m1 = rotation 0 (V4.get vr 0)
     and m2 = rotation 1 (V4.get vr 1)
     and m3 = rotation 2 (V4.get vr 2)
-    in 
+    in
     mult m1 (mult m2 m3)
 
   let rotationv vr : t =
     let m1 = rotation 0 (-.(V4.get vr 0))
     and m2 = rotation 1 (-.(V4.get vr 1))
     and m3 = rotation 2 (-.(V4.get vr 2))
-    in 
+    in
     mult m3 (mult m2 m1)
 
   (* create a scaling  *)
@@ -493,13 +499,13 @@ struct
   (* combine a scaling, a rotation and a translation *)
   let prepare vt vs vr : t =
     let s = scalev vs
-    and t = translationv vt  
-    and r = rotationv vr 
+    and t = translationv vt
+    and r = rotationv vr
     in
     mult t (mult r s)
 
   (* combine the inverse of a scaling, a rotation and a translation *)
-  let invprepare (vt : V4.t) (vs : V4.t) (vr : V4.t) : t = 
+  let invprepare (vt : V4.t) (vs : V4.t) (vr : V4.t) : t =
     let s = invscalev vs
     and t = invtranslationv vt
     and r = invrotationv vr
@@ -510,7 +516,7 @@ end
 
 (*
 let dumpf (m : int -> int -> float) w h =
-  for j = 0 to (pred h) do 
+  for j = 0 to (pred h) do
     Debug.string "<";
     for i = 0 to (w - 2) do
       Debug.raw_float (m i j);
@@ -520,7 +526,7 @@ let dumpf (m : int -> int -> float) w h =
     Debug.string ">";
     Debug.newline ()
   done
-    
+
 let dump ?(msg="mat") v =
   let w, h = width v, height v in
   Debug.msg (msg^" {");

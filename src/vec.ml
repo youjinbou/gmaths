@@ -28,7 +28,7 @@ sig
 
   (** vector dimension *)
   val size : int
-    
+
   (** null vector *)
   val null : unit -> t
 
@@ -87,6 +87,9 @@ sig
   (** this is actually scale and add *)
   val muladd  : t -> scalar -> t -> t
 
+  (** product *)
+  val mul     : t -> t -> t
+
   (** dot product *)
   val dot     : t -> t -> scalar
 
@@ -121,7 +124,7 @@ sig
 
   (** string 'serialization' *)
   val to_string : t -> string
-    
+
   (** vector lengths/norm, normalization *)
 
   val length : t -> scalar

@@ -1,6 +1,6 @@
 (** an homogeneous vector module *)
-(** this module uses the Vec4.Float module and overrides a few functions to 
-    handle homogeneous coordinates 
+(** this module uses the Vec4.Float module and overrides a few functions to
+    handle homogeneous coordinates
 *)
 
 include Vec4.Float
@@ -46,14 +46,14 @@ struct
     | 2 -> [| 0. ; 0. ; 1. ; 1.0 |]
     | _ -> invalid_arg "Vector.unit"
 
-  let opp (v : t) : t = 
+  let opp (v : t) : t =
     [|  v.(0) ; v.(1) ; v.(2) ; -. v.(3) |]
 
   let apply1 op v =
     let x,y,z,_ = to_tuple v in
     [| op x ; op y ; op z ; 1.0 |]
 
-  let apply2 op (v1 : t) (v2 : t) : t = 
+  let apply2 op (v1 : t) (v2 : t) : t =
     let ( +. ) = op in
     let (x1,y1,z1,_), (x2,y2,z2,_) = to_tuple v1, to_tuple v2 in
     [| x1 +. x2 ; y1 +. y2 ; z1 +. z2 ; 1.0 |]
@@ -65,7 +65,7 @@ struct
 
   let apply4 op (v1 : t) (v2 : t) (v3 : t) (v4 : t) : t =
     let ( +. ) = op in
-    let (x1,y1,z1,_), (x2,y2,z2,_), (x3,y3,z3,_), (x4,y4,z4,_) = 
+    let (x1,y1,z1,_), (x2,y2,z2,_), (x3,y3,z3,_), (x4,y4,z4,_) =
       to_tuple v1, to_tuple v2, to_tuple v3, to_tuple v4 in
     [| x1 +. x2 +. x3  +. x4 ; y1 +. y2 +. y3 +. y4 ; z1 +. z2 +. z3 +. z4 ; 1.0 |]
 
@@ -80,18 +80,18 @@ struct
   let scale (v : t) (s : scalar) : t =
     [| v.(0) ; v.(1) ; v.(2) ; v.(3) /. s |]
 
-  let invscale (v : t) (s : scalar) : t = 
+  let invscale (v : t) (s : scalar) : t =
     [| v.(0) ; v.(1) ; v.(2) ; v.(3) *. s |]
 
-  let muladd (v1 : t) (s : scalar) (v2 : t) : t = 
+  let muladd (v1 : t) (s : scalar) (v2 : t) : t =
     let op x y = x *. s +. y in
     apply2 op v1 v2
 
-  let dot (v1 : t) (v2 : t) = 
+  let dot (v1 : t) (v2 : t) =
     let (x1,y1,z1,_), (x2,y2,z2,_) = to_tuple v1, to_tuple v2 in
     x1 *. x2 +. y1 *. y2 +. z1 *. z2
 
-  let cross (av : t array) : t = 
+  let cross (av : t array) : t =
     let (x1,y1,z1,_), (x2,y2,z2,_) = to_tuple av.(0), to_tuple av.(1) in [|
       (y1 *. z2) -. (z1 *. y2) ;
       (z1 *. x2) -. (x1 *. z2) ;
@@ -99,10 +99,10 @@ struct
       1.0
   |]
 
-  let random (v : t) : t = 
-    apply1 (fun x -> if x = T.zero then T.zero else T.rand x) v 
+  let random (v : t) : t =
+    apply1 (fun x -> if x = T.zero then T.zero else T.rand x) v
 
-  let modulo (v : t) m : t = 
+  let modulo (v : t) m : t =
     apply1 (fun x -> T.modulo x m) v
 
   let min = apply2 Pervasives.min
@@ -113,10 +113,9 @@ struct
 
   let normalize (v : t) = invscale v (length v)
 
-  let below_epsilon (v : t) = 
+  let below_epsilon (v : t) =
     let x,y,z,_ = to_tuple v in
     T.abs x < T.epsilon && T.abs y < T.epsilon && T.abs z < T.epsilon
-
 
   let to_string (v : t) =
     let to_s = T.to_string
@@ -149,9 +148,9 @@ let alpha v1 v2 = acos ( (dot v1 v2) /. ((length v1) *. (length v2)) )
 include HomogeneousF
 
 (* distance between two points v1 & v2 *)
-let distance v1 v2 = 
+let distance v1 v2 =
   length (sub v2 v1)
 
 (** compute the unit vector on the line from p1 to p2 *)
-let unit_vector p1 p2 = 
+let unit_vector p1 p2 =
   normalize (sub p2 p1)

@@ -25,10 +25,8 @@ export DH_VERBOSE=1
 
 PROJECTNAME      := gmaths
 
-#OCBFLAGS         := -no-hygiene
-OCB              := $(shell which ocamlbuild)
-BUILD            := $(CURDIR)/build.sh
-TARGET           := $(PROJECTNAME).cma $(PROJECTNAME).cmxa 
+BUILD            := /usr/bin/make
+TARGET           := $(PROJECTNAME).cma $(PROJECTNAME).cmxa
 
 # do we really need that?
 GREP             := $(shell which grep)

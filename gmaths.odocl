@@ -1,7 +1,8 @@
-Primitives
-Vec
-Vec4
-Vec2
-Vector
-Matrix
-Quaternion
+src/Primitives
+src/Vec
+src/Vec4
+src/Vec3
+src/Vec2
+src/Vector
+src/Matrix
+src/Quaternion

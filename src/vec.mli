@@ -87,6 +87,9 @@ sig
   (** this is actually scale and add *)
   val muladd  : t -> scalar -> t -> t
 
+  (** product *)
+  val mul     : t -> t -> t
+
   (** dot product *)
   val dot     : t -> t -> scalar
 

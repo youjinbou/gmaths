@@ -3,14 +3,14 @@
      This code provided under the LGPL License V2
 
 
-     Buffer code lifted from the original Buffer module distributed with 
+     Buffer code lifted from the original Buffer module distributed with
      Ocaml:
      "
-		Xavier Leroy, projet Cristal, INRIA Rocquencourt         
+		Xavier Leroy, projet Cristal, INRIA Rocquencourt
 
-      Copyright 1996 Institut National de Recherche en Informatique et   
-      en Automatique.  All rights reserved.  This file is distributed    
-      under the terms of the GNU Library General Public License, with    
+      Copyright 1996 Institut National de Recherche en Informatique et
+      en Automatique.  All rights reserved.  This file is distributed
+      under the terms of the GNU Library General Public License, with
       the special exception on linking described in file ../LICENSE."
 
 
@@ -21,7 +21,7 @@
 
 module type VECTOR =
 sig
-  
+
   type 'a t
 
   val set        : 'a t -> int -> 'a -> unit
@@ -34,11 +34,11 @@ sig
 
 end
 
-module Array : VECTOR with type 'a t = 'a array = 
+module Array : VECTOR with type 'a t = 'a array =
 struct
 
   include Array
-  
+
   type 'a t = 'a array
 
   let max_length = Sys.max_array_length
@@ -47,7 +47,7 @@ end
 
 module type MONO_VECTOR =
 sig
-  
+
   type t
   type e
 
@@ -301,7 +301,7 @@ struct
     let new_position = b.position + len in
     if new_position > b.length then resize b len;
     V.blit s 0 b.buffer b.position len;
-    let pos = b.position in 
+    let pos = b.position in
     b.position <- new_position; pos
 
   let add_buffer b bs =

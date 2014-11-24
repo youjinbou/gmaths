@@ -1,5 +1,7 @@
 <debian>: -traverse
 <src>: include
-<src/*.cmx>: inline, for-pack(Gmaths)
-<src/*.ml>: inline
-<tests/*.{ml,native,byte}>: inline, use_unix, use_oUnit, use_gmaths
+<src/*.cmo>: inline(1000)
+<src/*.cmx>: inline(1000), for-pack(Gmaths), fastmath
+<tests/*.{cmo,cmx,native,byte}>: inline(1000), use_unix, use_oUnit, use_gmaths
+<examples/{gltut,nehe}/*.{cmx,cmo,native,byte}>: inline(1000), use_unix, use_gmaths, use_lablgl
+

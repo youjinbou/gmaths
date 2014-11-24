@@ -24,6 +24,8 @@ val mapi : (int -> int -> float -> float) -> t -> t
 val copy : t -> t
 val null : int -> int -> t
 val fscale : t -> float -> t
+val to_array : t -> float array
+val of_array : float array -> int -> int -> t
 
 type mat2x2 = t
 type mat3x3 = t
