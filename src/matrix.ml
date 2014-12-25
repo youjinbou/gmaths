@@ -38,7 +38,7 @@ let init w h f : t =
   Array.init h (fun y -> Array.init w (fun x -> (f y x)))
 
 (** produce the transpose matrix of m *)
-let transpose w h (m : t) =
+let transposed w h (m : t) =
   init h w (fun x y -> get m y x)
 
 (** the identity matrix *)
@@ -54,7 +54,7 @@ let dotf (s : int) (v1 : int -> float) (v2 : int -> float) : float =
   in
   dotf (pred s) v1 v2 0.0
 
-let mult (m1 : t) (m2 : t) =
+let mul (m1 : t) (m2 : t) =
   let h = height m1
   and w = width m2
   and s = width m1
@@ -62,7 +62,7 @@ let mult (m1 : t) (m2 : t) =
   in
   if s = s' then
     init w h (fun a b -> dotf s (row_get m1 a) (column_get m2 b))
-  else raise (Invalid_argument "Matrix.mult : sizes of matrices don't match")
+  else raise (Invalid_argument "Matrix.mul : sizes of matrices don't match")
 
 let make w h v =
   init w h (fun _ _ -> v)
@@ -124,7 +124,7 @@ struct
   let apply m (v : vector) : vector =
     Vec2.Float.init (fun i -> dotf (get m i) (Vec2.Float.get v))
 
-  let mult (m1 : t) (m2 : t) =
+  let mul (m1 : t) (m2 : t) =
     init size size (fun a b -> dotf (row_get m1 a) (column_get m2 b))
 
   let transposef m = [|
@@ -179,7 +179,7 @@ struct
       (m 0 1) *. (det2f (f 2)) +.
       (m 0 2) *. (det2f (f 3))
 
-  let transpose (m : t) = [|
+  let transposed (m : t) = [|
     [| get m 0 0 ; get m 1 0 ; get m 2 0 |] ;
     [| get m 0 1 ; get m 1 1 ; get m 2 1 |] ;
     [| get m 0 2 ; get m 1 2 ; get m 2 2 |]
@@ -190,7 +190,7 @@ struct
   let apply (m : t) (v : vector) : vector =
     Vec3.Float.init (fun i -> dotf (get m i) (Vec3.Float.get v))
 
-  let mult (m1 : t) (m2 : t) =
+  let mul (m1 : t) (m2 : t) =
     init size size (fun a b -> dotf (row_get m1 a) (column_get m2 b))
 
   let rotation_z angle : t =
@@ -265,7 +265,7 @@ struct
     let d = detf m
     and f x y = (minor x y) m
     in
-    if d != 0.0 then
+    if d <> 0.0 then
       let cof = init dim dim (fun a b -> (det2f (f a b)) /. d)
       in
       cof
@@ -359,8 +359,8 @@ struct
       [| 0.0 ; 0.0 ; 0.0 ; 1.0 |];
        |]
 
-  let transpose (m : t) : t =
-    transpose size size m
+  let transposed (m : t) : t =
+    transposed size size m
 
   let minor = minor size
 
@@ -370,10 +370,10 @@ struct
     let d = detf m
     and f x y = (minor x y) m
     in
-    if d != 0.0 then
+    if d <> 0.0 then
       let cof = init dim dim (fun a b -> (let s = if (a + b) mod 2 = 0 then 1. else -1. in  s *. det3f (f a b)) /. d)
       in
-      transpose cof
+      transposed cof
     else raise (Invalid_argument "Matrix.inverse : null determinant")
 
   let inverse (m : t) : t =
@@ -381,14 +381,14 @@ struct
 
   let dotf v1 v2 = (v1 0) *. (v2 0) +. (v1 1) *. (v2 1) +. (v1 2) *. (v2 2) +. (v1 3) *. (v2 3)
 
-(*
   let apply (m : t) (v : vector) : vector =
-    Array.init 4 (fun i -> dotf (get m i) (fun i -> v.(i)))
-*)
+    V4.init (fun i -> dotf (row_get m i) (fun i -> V4.get v i))
 
-  let mult (m1 : t) (m2 : t) =
+
+  let mul (m1 : t) (m2 : t) =
     init 4 4 (fun a b -> dotf (row_get m1 b) (column_get m2 a))
 
+(*
   let apply (m : t) (v : vector) : vector =
     let (x,y,z,w) = V4.to_tuple v
     in
@@ -404,6 +404,7 @@ struct
     and w = m.(0).(3) *. x +. m.(1).(3) *. y +. m.(2).(3) *. z +. m.(3).(3) *. w
     in
     V4.of_tuple (x,y,z,w)
+ *)
 
   let translation x y z : t =
     let m = identity ()
@@ -468,17 +469,17 @@ struct
     and m2 = rotation 1 (V4.get vr 1)
     and m3 = rotation 2 (V4.get vr 2)
     in
-    mult m1 (mult m2 m3)
+    mul m1 (mul m2 m3)
 
   let rotationv vr : t =
     let m1 = rotation 0 (-.(V4.get vr 0))
     and m2 = rotation 1 (-.(V4.get vr 1))
     and m3 = rotation 2 (-.(V4.get vr 2))
     in
-    mult m3 (mult m2 m1)
+    mul m3 (mul m2 m1)
 
   (* create a scaling  *)
-  let scale x y z : t =
+  let scaling x y z : t =
     let m = null () in
     set m 0 0 x;
     set m 1 1 y;
@@ -487,30 +488,30 @@ struct
     m
 
   (* scaling on 3 axes *)
-  let scalev v : t =
+  let scalingv v : t =
     let x,y,z,_ = V4.to_tuple v
     in
-    scale x y z
+    scaling x y z
 
-  let invscalev v : t =
+  let invscalingv v : t =
     let inv v = V4.map (fun x -> 1./.x) v in
-    scalev (inv v)
+    scalingv (inv v)
 
   (* combine a scaling, a rotation and a translation *)
   let prepare vt vs vr : t =
-    let s = scalev vs
+    let s = scalingv vs
     and t = translationv vt
     and r = rotationv vr
     in
-    mult t (mult r s)
+    mul t (mul r s)
 
   (* combine the inverse of a scaling, a rotation and a translation *)
   let invprepare (vt : V4.t) (vs : V4.t) (vr : V4.t) : t =
-    let s = invscalev vs
+    let s = invscalingv vs
     and t = invtranslationv vt
     and r = invrotationv vr
     in
-    mult s (mult r t)
+    mul s (mul r t)
 
 end
 

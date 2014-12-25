@@ -13,11 +13,11 @@ val set : t -> int -> int -> float -> unit
 val row : t -> int -> vector
 val col : t -> int -> vector
 val init : int -> int -> (int -> int -> float) -> t
-val transpose : int -> int -> t -> t
+val transposed : int -> int -> t -> t
 val id : int -> t
 val minor : int -> int -> int -> (int -> int -> 'a) -> int -> int -> 'a
 val dotf : int -> (int -> float) -> (int -> float) -> float
-val mult : t -> t -> t
+val mul : t -> t -> t
 val make : int -> int -> float -> t
 val map : (float -> float) -> t -> t
 val mapi : (int -> int -> float -> float) -> t -> t
@@ -53,10 +53,10 @@ sig
   val identity : unit -> t
   val null : unit -> t
   val detf : (int -> int -> float) -> float
-  val transpose : t -> t
+  val transposed : t -> t
   val dotf : (int -> float) -> (int -> float) -> float
   val apply : t -> vector -> vector
-  val mult : t -> t -> t
+  val mul : t -> t -> t
   val rotation_z : float -> t
   val rotation_y : float -> t
   val rotation_x : float -> t
@@ -83,23 +83,23 @@ sig
   val rotation_z : float -> t
   val rotation_y : float -> t
   val rotation_x : float -> t
-  val transpose : t -> t
+  val transposed : t -> t
   val minor : int -> int -> (int -> int -> float) -> int -> int -> float
   val inversef : (int -> int -> float) -> t
   val inverse : t -> t
   val dotf : (int -> float) -> (int -> float) -> float
-  val mult : t -> t -> t
+  val mul : t -> t -> t
   val apply : t -> vector -> vector
   val translation : float -> float -> float -> t
   val translationv : vector -> t
-  val invtranslationv : Primitives.Float.t array -> t
+  val invtranslationv : vector -> t
   val rotation2 : int -> float -> t
   val rotation : int -> float -> t
   val invrotationv : vector -> t
   val rotationv : vector -> t
-  val scale : float -> float -> float -> t
-  val scalev : vector -> t
-  val invscalev : vector -> t
+  val scaling : float -> float -> float -> t
+  val scalingv : vector -> t
+  val invscalingv : vector -> t
   val prepare : vector -> vector -> vector -> t
   val invprepare : vector -> vector -> vector -> t
 end

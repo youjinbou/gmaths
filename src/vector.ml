@@ -3,7 +3,9 @@
     handle homogeneous coordinates
 *)
 
-include Vec4.Float
+module V4 = Vec4.Float
+
+include V4
 
 module T = Scalar
 
@@ -16,58 +18,62 @@ struct
   let h (x,y,z,w) = x /. w , y /. w, z /. w, 1.0
 
   let homogenize v =
-    let w = v.(3) in
-    [| v.(0) /. w ; v.(1) /. w ; v.(2) /. w ; 1.0 |]
+    V4.of_tuple (h @@ V4.to_tuple v)
 
   let to_tuple v = h (to_tuple v)
 
   let get v k =
+    let c =
     match k with
-      | 0 -> v.(0) /. v.(3)
-      | 1 -> v.(1) /. v.(3)
-      | 2 -> v.(2) /. v.(3)
+      | 0 -> 0
+      | 1 -> 1
+      | 2 -> 2
       | _ -> invalid_arg "Vector.get"
+    in V4.get v c /. V4.get v 3
 
   let set v k x =
+    let c =
     match k with
-      | 0 -> v.(0) <- x *. v.(3)
-      | 1 -> v.(1) <- x *. v.(3)
-      | 2 -> v.(2) <- x *. v.(3)
-      | _ -> invalid_arg "Vector.set"
+      | 0 -> 0
+      | 1 -> 1
+      | 2 -> 2
+      | _ -> invalid_arg "Vector.get"
+    in V4.set v c (x *. V4.get v 3)
 
 
-  let null () : t = [| 0.0 ; 0.0 ; 0.0 ; 1.0 |]
+  let null () : t = V4.unit 3
 
-  let make k : t = [| k ; k ; k ; 1.0 |]
+  let make k : t = V4.of_tuple (k, k, k, 1.0)
 
   let unit : int -> t = function
-    | 0 -> [| 1. ; 0. ; 0. ; 1.0 |]
-    | 1 -> [| 0. ; 1. ; 0. ; 1.0 |]
-    | 2 -> [| 0. ; 0. ; 1. ; 1.0 |]
+    | 0 -> V4.of_tuple (1., 0., 0., 1.0)
+    | 1 -> V4.of_tuple (0., 1., 0., 1.0)
+    | 2 -> V4.of_tuple (0., 0., 1., 1.0)
     | _ -> invalid_arg "Vector.unit"
 
   let opp (v : t) : t =
-    [|  v.(0) ; v.(1) ; v.(2) ; -. v.(3) |]
+    let x,y,z,w = V4.to_tuple v in
+    V4.of_tuple (x,y,z,-.w)
 
   let apply1 op v =
     let x,y,z,_ = to_tuple v in
-    [| op x ; op y ; op z ; 1.0 |]
+    V4.of_tuple (op x, op y, op z, 1.0)
 
   let apply2 op (v1 : t) (v2 : t) : t =
     let ( +. ) = op in
     let (x1,y1,z1,_), (x2,y2,z2,_) = to_tuple v1, to_tuple v2 in
-    [| x1 +. x2 ; y1 +. y2 ; z1 +. z2 ; 1.0 |]
+    V4.of_tuple (x1 +. x2, y1 +. y2, z1 +. z2, 1.0)
 
   let apply3 op (v1 : t) (v2 : t) (v3 : t) : t =
     let ( +. ) = op in
     let (x1,y1,z1,_), (x2,y2,z2,_), (x3,y3,z3,_) = to_tuple v1, to_tuple v2, to_tuple v3 in
-    [| x1 +. x2 +. x3  ; y1 +. y2 +. y3 ; z1 +. z2 +. z3 ; 1.0 |]
+    V4.of_tuple (x1 +. x2 +. x3, y1 +. y2 +. y3, z1 +. z2 +. z3, 1.0)
 
   let apply4 op (v1 : t) (v2 : t) (v3 : t) (v4 : t) : t =
     let ( +. ) = op in
     let (x1,y1,z1,_), (x2,y2,z2,_), (x3,y3,z3,_), (x4,y4,z4,_) =
       to_tuple v1, to_tuple v2, to_tuple v3, to_tuple v4 in
-    [| x1 +. x2 +. x3  +. x4 ; y1 +. y2 +. y3 +. y4 ; z1 +. z2 +. z3 +. z4 ; 1.0 |]
+    V4.of_tuple (x1 +. x2 +. x3  +. x4, y1 +. y2 +. y3 +. y4, z1 +. z2 +. z3 +. z4, 1.0)
 
   let add = apply2 ( +. )
   let add3 = apply3 ( +. )
@@ -78,10 +84,12 @@ struct
   let sub4 = apply4 ( -. )
 
   let scale (v : t) (s : scalar) : t =
-    [| v.(0) ; v.(1) ; v.(2) ; v.(3) /. s |]
+    let x,y,z,w = V4.to_tuple v in
+    V4.of_tuple (x,y,z, w /. s)
 
   let invscale (v : t) (s : scalar) : t =
-    [| v.(0) ; v.(1) ; v.(2) ; v.(3) *. s |]
+    let x,y,z,w = V4.to_tuple v in
+    V4.of_tuple (x,y,z, w *. s)
 
   let muladd (v1 : t) (s : scalar) (v2 : t) : t =
     let op x y = x *. s +. y in
@@ -92,12 +100,13 @@ struct
     x1 *. x2 +. y1 *. y2 +. z1 *. z2
 
   let cross (av : t array) : t =
-    let (x1,y1,z1,_), (x2,y2,z2,_) = to_tuple av.(0), to_tuple av.(1) in [|
-      (y1 *. z2) -. (z1 *. y2) ;
-      (z1 *. x2) -. (x1 *. z2) ;
-      (x1 *. y2) -. (y1 *. x2) ;
+    let (x1,y1,z1,_), (x2,y2,z2,_) = to_tuple av.(0), to_tuple av.(1) in
+    V4.of_tuple (
+      (y1 *. z2) -. (z1 *. y2),
+      (z1 *. x2) -. (x1 *. z2),
+      (x1 *. y2) -. (y1 *. x2),
       1.0
-  |]
+      )
 
   let random (v : t) : t =
     apply1 (fun x -> if x = T.zero then T.zero else T.rand x) v

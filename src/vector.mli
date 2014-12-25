@@ -59,12 +59,12 @@ val set : t -> int -> scalar -> unit
 
 (** map operators *)
 
-val map : (scalar -> 'a) -> t -> 'a array
-val map2 : (scalar -> scalar -> 'a) -> t -> t -> 'a array
-val map3 : (scalar -> scalar -> scalar -> 'a) -> t -> t -> t -> 'a array
+val map : (scalar -> scalar) -> t -> t
+val map2 : (scalar -> scalar -> scalar) -> t -> t -> t
+val map3 : (scalar -> scalar -> scalar -> scalar) -> t -> t -> t -> t
 val map4 :
-  (scalar -> scalar -> scalar -> scalar -> 'a) ->
-  t -> t -> t -> t -> 'a array
+  (scalar -> scalar -> scalar -> scalar -> scalar) ->
+  t -> t -> t -> t -> t
 
 val mapset : (scalar -> scalar) -> t -> unit
 val map2set : (scalar -> scalar -> scalar) -> t -> t -> unit

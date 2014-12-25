@@ -1,7 +1,8 @@
 <debian>: -traverse
 <src>: include
 <src/*.cmo>: inline(1000)
-<src/*.cmx>: inline(1000), for-pack(Gmaths), fastmath
+<src/*.cmx>: inline(1000), for-pack(Gmaths)
+<src/rng/*.cmx>: inline(1000), for-pack(Gmaths.Rng)
 <tests/*.{cmo,cmx,native,byte}>: inline(1000), use_unix, use_oUnit, use_gmaths
 <examples/{gltut,nehe}/*.{cmx,cmo,native,byte}>: inline(1000), use_unix, use_gmaths, use_lablgl
-
+<src/quaternion.ml>: keep_asm
